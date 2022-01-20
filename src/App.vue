@@ -4,12 +4,17 @@
     <!-- <input type="text" v-model.trim="modificatorValue">  -->
     <my-button @click="fetchPosts"> Получить посты</my-button>
 
-    <my-button 
-    @click="showDialog"
-    >
-    
-     Создать пост</my-button>
-
+    <div class="app__btns">
+        <my-button 
+        @click="showDialog"
+        >
+        Создать пост
+        </my-button>
+    <my-select
+        v-model="selectedSort"
+        :options="sortOptions"
+    />
+    </div>
 
     <my-dialog v-model:show="dialogVisible"> 
 
@@ -22,8 +27,9 @@
     <post-list 
     :posts="posts"
     @remove="removePost"
+    v-if="!isPostsLoading"
     />
-   
+    <div v-else>Идет загрузка... </div>
 </div>
 </template>
 
@@ -42,6 +48,12 @@ export default{
             posts: [ ],
             dialogVisible: false,
             modificatorValue: '',
+            isPostsLoading: false,
+            selectedSort: '',
+            sortOptions: [
+                {value: 'title', name: 'По названию'},
+                {value: 'body', name: 'По описанию' }
+            ]
         }
     },
     methods: {
@@ -57,13 +69,19 @@ export default{
         },
         async fetchPosts(){
             try{
+                this.isPostsLoading = true;
                 const response = await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10'); //ответ от запроса на сервер
                 this.posts = response.data
                 console.log(response)
             } catch (e) {
                 alert('Ошибка')
+            }finally{
+                this.isPostsLoading = false;
             }
         }
+    },
+    mounted() {
+        this.fetchPosts();
     }
 }
 </script>
@@ -80,5 +98,9 @@ export default{
     padding: 20px;
 }
 
+.app__btns{
+    display: flex;
+    justify-content: space-between;
+}
 
 </style>
