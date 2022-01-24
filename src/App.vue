@@ -2,6 +2,12 @@
 <div class="app">
     <h1>Страница с постами</h1>
     <!-- <input type="text" v-model.trim="modificatorValue">  -->
+   <my-input
+   v-model="searchQuery"
+   placeholder="Поиск..."
+   />
+
+
     <my-button @click="fetchPosts"> Получить посты</my-button>
 
     <div class="app__btns">
@@ -25,7 +31,7 @@
     </my-dialog>
 
     <post-list 
-    :posts="sortedPosts"
+    :posts="sortedAndSearchedPosts"
     @remove="removePost"
     v-if="!isPostsLoading"
     />
@@ -50,6 +56,7 @@ export default{
             modificatorValue: '',
             isPostsLoading: false,
             selectedSort: '',
+            searchQuery: '',
             sortOptions: [
                 {value: 'title', name: 'По названию'},
                 {value: 'body', name: 'По описанию' }
@@ -88,6 +95,9 @@ export default{
             return [...this.posts].sort((post1, post2) => {
                 return post1[this.selectedSort]?.localeCompare(post2[this.selectedSort])
                 })
+        },
+        sortedAndSearchedPosts() {
+            return this.sortedPosts.filter(post => post.title.toLowerCase().includes(this.searchQuery.toLowerCase()))
         }
     }
 
