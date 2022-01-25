@@ -11,7 +11,6 @@
          @click="$emit('remove', post)"
          >
          
-         
          Удалить</my-button>   
 
         </div>
