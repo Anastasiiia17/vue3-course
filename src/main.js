@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App'
 import components from '@/components/UI';
 import router from "@/router/router";
+import store from "@/store";
 import VIntersection from "@/directives/VIntersection";
 
 import directives from '@/directives';
@@ -19,4 +20,5 @@ directives.forEach(directive => {
 
 app
     .use(router) //подключение 
+    .use(store)
     .mount('#app');
