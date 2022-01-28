@@ -1,9 +1,16 @@
 <template> 
 <div>
-    <h1>{{ $store.getters.doubleLikes }}</h1>
-    <!-- <h1>{{ $store.state.likes }}</h1>
-    <input type="text" v-model.trim="modificatorValue">  -->
-   <my-input
+
+    <div></div>
+    <!--<h1>{{ $store.getters.doubleLikes }}</h1>
+    <h1>{{ $store.state.likes }}</h1>
+    <input type="text" v-model.trim="modificatorValue"> 
+
+    <div> 
+    <my-button @click="store.commit('incrementLikes')">Лайк </my-button>
+    <my-button @click="store.commit('decrementLikes')">Дизлайк </my-button></div>
+
+   <my-input 
    v-model="searchQuery"
    placeholder="Поиск..."
    v-focus
@@ -37,7 +44,7 @@
     />
     <div v-else>Идет загрузка... </div>
     <div v-intersection="loadMorePosts" class="observer"></div>
-    <!--<div class="page__wrapper"> 
+    <div class="page__wrapper"> 
         <div 
             v-for="pageNumber in totalPages" 
             :key="pageNumber"
@@ -97,39 +104,7 @@ export default{
         //     this.page = pageNumber
         //     this.fetchPosts()
         // },
-        async fetchPosts(){
-            try{
-                this.isPostsLoading = true;
-                const response = await axios.get('https://jsonplaceholder.typicode.com/posts?', {
-                    params: { 
-                    _page: this.page,
-                    _limit: this.limit,
-                    }
-                }); //ответ от запроса на сервер
-                this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit)
-                this.posts = response.data
-            } catch (e) {
-                alert('Ошибка')
-            }finally{
-                this.isPostsLoading = false;
-            }
-        },
-
-        async loadMorePosts(){
-            try{
-                this.page += 1;
-                const response = await axios.get('https://jsonplaceholder.typicode.com/posts?', {
-                    params: { 
-                    _page: this.page,
-                    _limit: this.limit,
-                    }
-                }); //ответ от запроса на сервер
-                this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit)
-                this.posts = [...this.posts, ...response.data];
-            } catch (e) {
-                alert('Ошибка')
-            }
-        }
+       
     },
     mounted() {
         this.fetchPosts();
@@ -147,14 +122,7 @@ export default{
         // observer.observe(this.$refs.observer);
     },
     computed: {
-        sortedPosts() {
-            return [...this.posts].sort((post1, post2) => {
-                return post1[this.selectedSort]?.localeCompare(post2[this.selectedSort])
-                })
-        },
-        sortedAndSearchedPosts() {
-            return this.sortedPosts.filter(post => post.title.toLowerCase().includes(this.searchQuery.toLowerCase()))
-        }
+      
     },
 
     // watch: {
