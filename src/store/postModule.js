@@ -1,31 +1,28 @@
+import axios from "axios";
 
-
-export default postModule ({
-   state: () => ({
-    posts: [ ],
-    modificatorValue: '',
-    isPostsLoading: false,
-    selectedSort: '',
-    searchQuery: '',
-    page: 1,
-    limit: 10,
-    totalPages: 0,
-    sortOptions: [
-        {value: 'title', name: 'По названию'},
-        {value: 'body', name: 'По описанию' },
-    ]
-   }),
-   getters: {
-    sortedPosts(state) {
-        return [state.posts].sort((post1, post2) => {
-            return post1[state.selectedSort]?.localeCompare(post2[state.selectedSort])
-            })
+export const postModule = {
+    state: () => ({
+        posts: [],
+        isPostsLoading: false,
+        selectedSort: '',
+        searchQuery: '',
+        page: 1,
+        limit: 10,
+        totalPages: 0,
+        sortOptions: [
+            {value: 'title', name: 'По названию'},
+            {value: 'body', name: 'По содержимому'},
+        ]
+    }),
+    getters: {
+        sortedPosts(state) {
+            return [...state.posts].sort((post1, post2) => post1[state.selectedSort]?.localeCompare(post2[state.selectedSort]))
+        },
+        sortedAndSearchedPosts(state, getters) {
+            return getters.sortedPosts.filter(post => post.title.toLowerCase().includes(state.searchQuery.toLowerCase()))
+        }
     },
-    sortedAndSearchedPosts(state, getters) {
-        return getters.sortedPosts.filter(post => post.title.toLowerCase().includes(state.searchQuery.toLowerCase()))
-    }
-   },
-   mutations: { //предназначенны  для изменения состояния
+    mutations: {
         setPosts(state, posts) {
             state.posts = posts;
         },
@@ -44,8 +41,8 @@ export default postModule ({
         setSearchQuery(state, searchQuery) {
             state.searchQuery = searchQuery
         },
-   },
-   actions: {
+    },
+    actions: {
         async fetchPosts({state, commit}) {
             try {
                 commit('setLoading', true);
@@ -77,6 +74,7 @@ export default postModule ({
             } catch (e) {
                 console.log(e)
             }
-        },
+        }
     },
-})
+    namespaced: true
+}

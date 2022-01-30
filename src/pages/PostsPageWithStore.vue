@@ -1,165 +1,142 @@
-<template> 
-<div>
-
-    <div></div>
-    <!--<h1>{{ $store.getters.doubleLikes }}</h1>
-    <h1>{{ $store.state.likes }}</h1>
-    <input type="text" v-model.trim="modificatorValue"> 
-
-    <div> 
-    <my-button @click="store.commit('incrementLikes')">Лайк </my-button>
-    <my-button @click="store.commit('decrementLikes')">Дизлайк </my-button></div>
-
-   <my-input 
-   v-model="searchQuery"
-   placeholder="Поиск..."
-   v-focus
-   />
-    <my-button @click="fetchPosts"> Получить посты</my-button>
-
+<template>
+  <div>
+    <h1>Страница с постами</h1>
+    <my-input
+      :model-value="searchQuery"
+      @update:model-value="setSearchQuery"
+      placeholder="Поиск...."
+      v-focus
+    />
     <div class="app__btns">
-        <my-button 
+      <my-button
         @click="showDialog"
-        >
+      >
         Создать пост
-        </my-button>
-    <my-select
-        v-model="selectedSort"
+      </my-button>
+      <my-select
+        :model-value="selectedSort"
+        @update:model-value="setSelectedSort"
         :options="sortOptions"
-    />
+      />
     </div>
-
-    <my-dialog v-model:show="dialogVisible"> 
-
-        <post-form  
+    <my-dialog v-model:show="dialogVisible">
+      <post-form
         @create="createPost"
-        />
-
+      />
     </my-dialog>
-
-    <post-list 
-    :posts="sortedAndSearchedPosts"
-    @remove="removePost"
-    v-if="!isPostsLoading"
+    <post-list
+      :posts="sortedAndSearchedPosts"
+      @remove="removePost"
+      v-if="!isPostsLoading"
     />
-    <div v-else>Идет загрузка... </div>
+    <div v-else>Идет загрузка...</div>
     <div v-intersection="loadMorePosts" class="observer"></div>
-    <div class="page__wrapper"> 
-        <div 
-            v-for="pageNumber in totalPages" 
-            :key="pageNumber"
-            class="page-number"
-            :class="{
-                'current-page' : page === pageNumber
+    <div class="page__wrapper">
+      <div
+        v-for="pageNumber in totalPages"
+        :key="pageNumber"
+        class="page"
+        :class="{
+              'current-page': page === pageNumber
             }"
-            @click="changePage(pageNumber)"
-            >
-            {{ pageNumber }}
-        </div>
-    </div> -->
-
-</div>
+        @click="changePage(pageNumber)"
+      >
+        {{ pageNumber }}
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import PostForm from "@/components/PostForm";
 import PostList from "@/components/PostList";
+import MyButton from "@/components/UI/MyButton";
 import axios from 'axios';
+import MySelect from "@/components/UI/MySelect";
+import MyInput from "@/components/UI/MyInput";
+import {mapState, mapGetters, mapActions, mapMutations} from 'vuex'
 
-export default{
-    components: {
-        PostForm, PostList
+export default {
+  components: {
+    MyInput,
+    MySelect,
+    MyButton,
+    PostList, PostForm
+  },
+  data() {
+    return {
+      dialogVisible: false,
+    }
+  },
+  methods: {
+    ...mapMutations({
+      setPage: 'post/setPage',
+      setSearchQuery: 'post/setSearchQuery',
+      setSelectedSort: 'post/setSelectedSort',
+    }),
+    ...mapActions({
+      loadMorePosts: 'post/loadMorePosts',
+      fetchPosts: 'post/fetchPosts'
+    }),
+    createPost(post) {
+      this.posts.push(post);
+      this.dialogVisible = false;
     },
-
-    data() {
-        return{
-            posts: [ ],
-            dialogVisible: false,
-            modificatorValue: '',
-            isPostsLoading: false,
-            selectedSort: '',
-            searchQuery: '',
-            page: 1,
-            limit: 10,
-            totalPages: 0,
-            sortOptions: [
-                {value: 'title', name: 'По названию'},
-                {value: 'body', name: 'По описанию' },
-            ]
-        }
+    removePost(post) {
+      this.posts = this.posts.filter(p => p.id !== post.id)
     },
-
-    methods: {
-        createPost(post){
-           this.posts.push(post);
-           this.dialogVisible = false;
-        },
-        removePost(post){
-            this.posts = this.posts.filter(p => p.id !== post.id);
-        },
-        showDialog(){
-            this.dialogVisible = true;
-        },
-        // changePage(pageNumber){
-        //     this.page = pageNumber
-        //     this.fetchPosts()
-        // },
-       
+    showDialog() {
+      this.dialogVisible = true;
     },
-    mounted() {
-        this.fetchPosts();
-        console.log(this.$refs.observer); //нашли объект в DOM
-        // const options = {
-        // rootMargin: '0px',
-        // threshold: 1.0
-        // }
-        // const callback = (entries, observer) => {
-        //  if (entries[0].isIntersecting && this.page < this.totalPages){
-        //      this.loadMorePosts()
-        //  }
-        // };
-        // const observer = new IntersectionObserver(callback, options);
-        // observer.observe(this.$refs.observer);
-    },
-    computed: {
-      
-    },
-
-    // watch: {
-    //     selectedSort(newValue){
-    //         this.posts.sort((post1, post2) => {
-    //             return post1[this.selectedSort]?.localeCompare(post2[newValue])
-    //             })
-    //         //this.selectedSort и newValue в этом случае будут одним и тем же
-    //         }
-    // },
-    
+  },
+  mounted() {
+    this.fetchPosts();
+  },
+  computed: {
+    ...mapState({
+      posts: state => state.post.posts,
+      isPostsLoading: state => state.post.isPostsLoading,
+      selectedSort: state => state.post.selectedSort,
+      searchQuery: state => state.post.searchQuery,
+      page: state => state.post.page,
+      limit: state => state.post.limit,
+      totalPages: state => state.post.totalPages,
+      sortOptions: state => state.post.sortOptions
+    }),
+    ...mapGetters({
+      sortedPosts: 'post/sortedPosts',
+      sortedAndSearchedPosts: 'post/sortedAndSearchedPosts'
+    })
+  },
+  watch: {
+    // page() {
+    //   this.fetchPosts()
+    // }
+  }
 }
 </script>
 
-
 <style>
-.app__btns{
-    display: flex;
-    justify-content: space-between;
+
+.app__btns {
+  margin: 15px 0;
+  display: flex;
+  justify-content: space-between;
 }
-.page__wrapper{
-    display: flex;
-    margin-top: 15px;
+.page__wrapper {
+  display: flex;
+  margin-top: 15px;
 }
-.page-number{
-    border: 1px solid teal;
-    color: teal;
-    padding: 5px 10px;
-    margin: 1px;
+.page {
+  border: 1px solid black;
+  padding: 10px;
 }
-.current-page{
-    background-color: teal; 
-    border: 2px solid teal;
-    color: white;
+.current-page {
+  border: 2px solid teal;
 }
-.observer{
-    height: 30px;
-    background: gray;
+
+.observer {
+  height: 30px;
+  background: green;
 }
 </style>
